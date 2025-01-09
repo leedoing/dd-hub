@@ -1,0 +1,35 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm install -g pnpm
+        - pnpm install
+        - |
+          cat << EOF > .env.local
+          NEXT_PUBLIC_AWS_ACCESS_KEY_ID='${NEXT_PUBLIC_AWS_ACCESS_KEY_ID}'
+          NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY='${NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY}'
+          NEXT_PUBLIC_AWS_REGION='${NEXT_PUBLIC_AWS_REGION}'
+          DEFAULT_SOURCE_API_KEY='${DEFAULT_SOURCE_API_KEY}'
+          DEFAULT_SOURCE_APP_KEY='${DEFAULT_SOURCE_APP_KEY}'
+          DEFAULT_SOURCE_API_URL='${DEFAULT_SOURCE_API_URL}'
+          DEFAULT_TARGET_API_KEY='${DEFAULT_TARGET_API_KEY}'
+          DEFAULT_TARGET_APP_KEY='${DEFAULT_TARGET_APP_KEY}'
+          DEFAULT_TARGET_API_URL='${DEFAULT_TARGET_API_URL}'
+          NEXT_PUBLIC_CONTRIBUTOR_PASSWORD='${NEXT_PUBLIC_CONTRIBUTOR_PASSWORD}'
+          EOF
+    build:
+      commands:
+        - pnpm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+    secondaryArtifacts:
+      - baseDirectory: public
+        files:
+          - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .pnpm-store/**/*
