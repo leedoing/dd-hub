@@ -16,7 +16,7 @@ export default function Footer() {
               </a>
               <span className="text-gray-400">|</span>
               <a
-                href="https://github.com/leedoing/dd-hun"
+                href="https://github.com/leedoing/dd-hub"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-purple-600 hover:text-purple-800 transition-colors text-sm"
