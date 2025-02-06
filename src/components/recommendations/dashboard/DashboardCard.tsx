@@ -139,9 +139,9 @@ export default function DashboardCard({
             {/* View 버튼 */}
             <button
               onClick={() => sharedUrl && window.open(sharedUrl, '_blank')}
-              disabled={!sharedUrl || !sharedUrl.length > 0}
+              disabled={!sharedUrl || sharedUrl.trim() === ''}
               className={`text-xs px-2.5 py-1 rounded-md transition-all duration-200 flex items-center gap-1 ${
-                sharedUrl && sharedUrl.length > 0
+                sharedUrl && sharedUrl.trim() !== ''
                   ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm hover:shadow'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
