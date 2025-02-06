@@ -24,6 +24,7 @@ interface DashboardData {
   contributor: string;
   s3Key: string;
   downloads: number;
+  sharedUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -16,6 +16,7 @@ interface DashboardForm {
   target: string;
   language: string;
   contributor: string;
+  sharedUrl?: string;
 }
 
 interface UploadResponse {
@@ -35,7 +36,8 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
     description: '',
     target: 'devops',
     language: 'en',
-    contributor: ''
+    contributor: '',
+    sharedUrl: ''
   });
 
   const targetOptions = [
@@ -132,7 +134,8 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
       description: '',
       target: 'devops',
       language: 'en',
-      contributor: ''
+      contributor: '',
+      sharedUrl: ''
     });
   };
 
@@ -155,6 +158,7 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
         target: form.target,
         language: form.language,
         contributor: form.contributor,
+        sharedUrl: form.sharedUrl,
       };
 
       await onUpload({
@@ -268,6 +272,19 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Shared URL (Optional)
+                </label>
+                <input
+                  type="url"
+                  value={form.sharedUrl || ''}
+                  onChange={(e) => handleFormChange('sharedUrl', e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="https://app.datadoghq.com/dashboard/..."
+                />
               </div>
 
               <div>

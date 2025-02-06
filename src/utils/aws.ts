@@ -47,6 +47,7 @@ export async function uploadDashboard(dashboardData: any, metadata: any) {
         updatedAt: { S: timestamp },
         s3Key: { S: s3Key },
         downloads: { N: '0' },
+        sharedUrl: metadata.sharedUrl ? { S: metadata.sharedUrl } : { NULL: true },
       },
     }));
 
@@ -66,6 +67,7 @@ interface DashboardData {
   contributor: string;
   s3Key: string;
   downloads: number;
+  sharedUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -92,6 +94,7 @@ export async function getDashboards(): Promise<DashboardData[]> {
       return {
         ...unmarshalled,
         downloads: Number(unmarshalled.downloads), // 숫자로 변환
+        sharedUrl: unmarshalled.sharedUrl,  // 확인
       } as DashboardData;
     });
   } catch (error) {
