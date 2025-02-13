@@ -45,7 +45,7 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col max-w-[1296px] mx-auto">
+    <div className="min-h-screen flex flex-col max-w-[1550px] mx-auto">
       <Header resetMenu={resetMenu} />
       <div className="flex flex-1">
         <Sidebar 
@@ -53,7 +53,7 @@ export function Layout({ children }: LayoutProps) {
           onMenuChange={setActiveMenu} 
           resetMenu={resetMenu}
         />
-        <main className="flex-1 p-6 flex flex-col">
+        <main className="flex-1 p-8 flex flex-col">
           <div className="flex-1">
             {renderContent()}
           </div>
