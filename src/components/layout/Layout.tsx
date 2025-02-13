@@ -11,6 +11,7 @@ import RecommendationDashboards from '../recommendations/dashboard/Recommendatio
 import RecommendationMonitors from '../recommendations/monitor/RecommendationMonitors';
 import Home from '../home/Home';
 import { usePathname } from 'next/navigation';
+import BytesAI from '../ai/BytesAI';
 
 type LayoutProps = {
   children?: ReactNode;
@@ -34,8 +35,12 @@ export function Layout({ children }: LayoutProps) {
         return <RecommendationDashboards />;
       case '/recommendation/monitors':
         return <RecommendationMonitors />;
-      default:
+      case '/bytes-ai':
+        return <BytesAI />;
+      case '/':
         return <Home />;
+      default:
+        return children;
     }
   };
 

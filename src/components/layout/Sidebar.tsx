@@ -33,7 +33,12 @@ export default function Sidebar({ activeMenu, onMenuChange, resetMenu }: Sidebar
       id: 'sync-monitors',
       label: 'Monitor\nSynchronization',
       path: '/sync/monitors'
-    }
+    },
+    {
+      id: 'bytes-ai',
+      label: 'Bytes AI',
+      path: '/bytes-ai'
+    },
   ];
 
   const handleMenuClick = (menuItem: typeof sidebarMenus[0]) => {

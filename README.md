@@ -22,6 +22,9 @@ This service helps you find the best Dashboards and Monitors for your Datadog se
 - Logs
 - RUM
 
+### Bytes AI
+- AI-powered assistance using Datadog docs as knowledge base
+
 ## Synchronization
 
 ### Dashboard Synchronization

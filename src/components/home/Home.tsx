@@ -6,10 +6,6 @@ import React from 'react';
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col max-w-[1550px] mx-auto">
-      <header className="py-6 px-8 border-b">
-        {/* ... header 내용 ... */}
-      </header>
-
       <div className="flex flex-1">
         {/* 사이드바 */}
         
@@ -166,7 +162,20 @@ export default function Home() {
                   </div>
                 </section>
 
-                {/* 지원 리전 섹션 */}
+                {/* Bytes AI 섹션 */}
+                <div className="bg-purple-50 p-6 rounded-lg">
+                  <h2 className="text-xl font-semibold text-purple-900 mb-3">Bytes AI</h2>
+                  <ul className="space-y-2 text-gray-600">
+                    <li className="flex items-start">
+                      <svg className="h-6 w-6 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      AI-powered assistance using Datadog docs as knowledge base
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Supported Regions 섹션 */}
                 <section className="bg-gray-50 p-6 rounded-lg">
                   <h2 className="text-xl font-semibold text-purple-900 mb-4">Supported Regions</h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
