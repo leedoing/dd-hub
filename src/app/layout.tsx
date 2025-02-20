@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { DatadogRUM } from "@/components/common/DatadogRUM";
 import { Layout } from '@/components/layout/Layout';
+import { Providers } from "./providers";
 
 const geistSans = localFont({
   src: [
@@ -42,8 +43,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <DatadogRUM />
-        <Layout>{children}</Layout>
+        <Providers>
+          <DatadogRUM />
+          <Layout>{children}</Layout>
+        </Providers>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import Modal from '@/components/common/Modal';
 import { uploadDashboard } from '@/utils/aws';
 
@@ -26,6 +27,7 @@ interface UploadResponse {
 }
 
 export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
+  const { data: session } = useSession();
   const [error, setError] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -36,7 +38,7 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
     description: '',
     target: 'devops',
     language: 'en',
-    contributor: '',
+    contributor: session?.user?.email || '',
     sharedUrl: ''
   });
 
@@ -134,7 +136,7 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
       description: '',
       target: 'devops',
       language: 'en',
-      contributor: '',
+      contributor: session?.user?.email || '',
       sharedUrl: ''
     });
   };
@@ -274,6 +276,7 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
                 </select>
               </div>
 
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Shared URL (Optional)
@@ -293,18 +296,10 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
                 </label>
                 <input
                   type="text"
-                  value={form.contributor}
-                  onChange={(e) => handleFormChange('contributor', e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                  placeholder="Enter your name"
-                  required
+                  value={session?.user?.email || ''}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed"
+                  readOnly
                 />
-                {!form.contributor && (
-                  <p className="mt-1 text-sm text-red-500">Contributor name is required</p>
-                )}
-                <p className="mt-1 text-sm text-gray-500 italic">
-                  If you want to become a contributor, please contact lluckyy77@gmail.com
-                </p>
               </div>
             </div>
           </div>

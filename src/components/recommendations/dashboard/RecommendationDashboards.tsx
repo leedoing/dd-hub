@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Modal from '@/components/common/Modal';
 import UploadModal from './UploadModal';
 import DashboardCard from './DashboardCard';
 import SyncModal from './SyncModal';
 import { getDashboards, uploadDashboard, deleteDashboard } from '@/utils/aws';
+import { datadogRum } from '@datadog/browser-rum';
 
 type UserRole = 'contributor' | 'user' | null;
 
@@ -30,6 +33,8 @@ interface DashboardData {
 }
 
 export default function RecommendationDashboards() {
+  const router = useRouter();
+  const { data: session } = useSession();
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [password, setPassword] = useState('');
@@ -70,11 +75,23 @@ export default function RecommendationDashboards() {
     ],
   };
 
-  const handleRoleSelect = (role: UserRole) => {
+  const handleRoleSelect = async (role: UserRole) => {
     setUserRole(role);
     if (role === 'user') {
       setIsModalOpen(false);
       setIsAuthenticated(true);
+    } else if (role === 'contributor') {
+      // Contributor 선택 시 권한 체크
+      if (!session?.user?.isContributor) {
+        // 권한 없음 메시지 표시
+        setError('You currently don\'t have Contributor access. Please send an email to lluckyy77@gmail.com to request access.');
+        return;
+      }
+      // 권한이 있으면 인증된 상태로 설정
+      setIsAuthenticated(true);
+      setIsModalOpen(false);
+      // 업로드 버튼이 보이도록 userRole을 contributor로 설정
+      setUserRole('contributor');
     }
   };
 
@@ -288,25 +305,32 @@ export default function RecommendationDashboards() {
   };
 
   const handleSelectAll = () => {
-    const currentPageIds = paginatedDashboards.map(d => d.id);
-    const allSelected = currentPageIds.every(id => selectedDashboards.includes(id));
+    // 현재 필터링된 모든 대시보드의 ID를 가져옴
+    const allFilteredDashboardIds = filteredDashboards.map(d => d.id);
+    
+    // 모든 필터링된 대시보드가 선택되어 있는지 확인
+    const allSelected = allFilteredDashboardIds.every(id => 
+      selectedDashboards.includes(id)
+    );
     
     if (allSelected) {
+      // 모두 선택되어 있으면 필터링된 대시보드들을 선택 해제
       setSelectedDashboards(prev => 
-        prev.filter(id => !currentPageIds.includes(id))
+        prev.filter(id => !allFilteredDashboardIds.includes(id))
       );
     } else {
+      // 모두 선택되어 있지 않으면 필터링된 대시보드들을 모두 선택
       setSelectedDashboards(prev => [
         ...prev,
-        ...currentPageIds.filter(id => !prev.includes(id))
+        ...allFilteredDashboardIds.filter(id => !prev.includes(id))
       ]);
     }
   };
 
   const isAllSelected = useMemo(() => {
-    return paginatedDashboards.length > 0 && 
-           paginatedDashboards.every(d => selectedDashboards.includes(d.id));
-  }, [paginatedDashboards, selectedDashboards]);
+    return filteredDashboards.length > 0 && 
+           filteredDashboards.every(d => selectedDashboards.includes(d.id));
+  }, [filteredDashboards, selectedDashboards]);
 
   const selectedCount = selectedDashboards.length;
 
@@ -316,6 +340,21 @@ export default function RecommendationDashboards() {
     setIsAuthenticated(true);
   };
 
+  // 세션 정보가 변경될 때마다 Datadog RUM 사용자 정보 업데이트
+  useEffect(() => {
+    if (session?.user?.email) {
+      datadogRum.setUser({
+        id: session.user.email,
+        email: session.user.email,
+        isContributor: session.user.isContributor || false,
+        userRole: userRole || 'anonymous'
+      });
+    } else {
+      // 로그인하지 않은 경우 사용자 정보 초기화
+      datadogRum.clearUser();
+    }
+  }, [session, userRole]);
+
   return (
     <div className="h-full flex flex-col bg-white rounded-lg shadow-lg p-8">
       <h2 className="text-2xl font-bold mb-8 text-purple-900">Dashboard Recommendations</h2>
@@ -323,43 +362,41 @@ export default function RecommendationDashboards() {
       <div className="flex gap-6 flex-1 min-h-0">
         <FilterSection />
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-center space-x-4 mb-6">
-            {userRole !== 'contributor' && (
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={selectedDashboards.length === dashboards.length}
-                  onChange={handleSelectAll}
-                  className="h-4 w-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
-                  disabled={!isAuthenticated}
-                />
-                <span className="text-sm text-gray-600">Select all</span>
-              </div>
-            )}
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search dashboards..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
-              disabled={!isAuthenticated}
-            />
-            {userRole === 'contributor' ? (
-              <button
-                onClick={() => setIsUploadModalOpen(true)}
-                disabled={!isAuthenticated}
-                className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Upload
-              </button>
+          <div className="flex justify-between items-center mb-6">
+            {/* User 역할일 때만 Select all과 Sync 버튼 표시 */}
+            {userRole === 'user' ? (
+              <>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={handleSelectAll}
+                    className="h-4 w-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                    disabled={!isAuthenticated}
+                  />
+                  <span className="text-sm text-gray-600">Select all</span>
+                </div>
+
+                <button
+                  onClick={() => setIsSyncModalOpen(true)}
+                  disabled={selectedCount === 0}
+                  className={`px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 ${
+                    selectedCount === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  Sync Selected ({selectedCount})
+                </button>
+              </>
             ) : (
-              <button
-                onClick={() => setIsSyncModalOpen(true)}
-                disabled={selectedCount === 0 || !isAuthenticated}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Sync ({selectedCount})
-              </button>
+              /* Contributor 역할일 때는 Upload 버튼만 표시하고 오른쪽 정렬 */
+              <div className="flex justify-end w-full">
+                <button
+                  onClick={() => setIsUploadModalOpen(true)}
+                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                >
+                  Upload Dashboard
+                </button>
+              </div>
             )}
           </div>
 
@@ -399,58 +436,44 @@ export default function RecommendationDashboards() {
         </div>
       </div>
 
-      {/* Role Selection Modal */}
       {!isAuthenticated && (
         <Modal
           isOpen={isModalOpen}
           onClose={handleModalClose}
           title="Select Your Role"
         >
-          {!userRole ? (
-            <div className="space-y-4">
-              <button
-                onClick={() => handleRoleSelect('contributor')}
-                className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          <div className="p-6 space-y-4">
+            <button
+              onClick={() => handleRoleSelect('contributor')}
+              className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Contributor
+            </button>
+            <button
+              onClick={() => handleRoleSelect('user')}
+              className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+            >
+              User
+            </button>
+            {error && (
+              <p className="text-red-600 text-sm mt-2">{error}</p>
+            )}
+            
+            {/* 안내 메시지 추가 */}
+            <p className="text-sm text-gray-600 mt-4 italic">
+            If you're interested in becoming a contributor, please email{' '}
+              <a 
+                href="mailto:lluckyy77@gmail.com"
+                className="text-purple-600 hover:text-purple-700"
               >
-                Contributor
-              </button>
-              <button
-                onClick={() => handleRoleSelect('user')}
-                className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-              >
-                User
-              </button>
-            </div>
-          ) : userRole === 'contributor' ? (
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contributor Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                  placeholder="Enter password"
-                />
-                {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-                <p className="mt-2 text-sm text-gray-500 italic">
-                  If you want to become a contributor, please contact lluckyy77@gmail.com
-                </p>
-              </div>
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-              >
-                Submit
-              </button>
-            </form>
-          ) : null}
+                lluckyy77@gmail.com
+              </a>
+              {' '}with your reason for joining.
+            </p>
+          </div>
         </Modal>
       )}
 
-      {/* Upload Modal */}
       <UploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}

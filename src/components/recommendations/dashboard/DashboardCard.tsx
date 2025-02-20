@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { downloadDashboard, deleteDashboard } from '@/utils/aws';
+import { useSession } from 'next-auth/react';
 
 interface DashboardCardProps {
   id: string;
@@ -57,6 +58,8 @@ const formatDescription = (text: string) => {
   return html;
 };
 
+const MASTER_EMAIL = 'lluckyy77@gmail.com';  // 마스터 권한을 가진 이메일
+
 export default function DashboardCard({
   id,
   title,
@@ -78,6 +81,10 @@ export default function DashboardCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { data: session } = useSession();
+  
+  // 마스터 이메일이거나 본인이 작성한 대시보드인 경우 삭제 가능
+  const canDelete = session?.user?.email === MASTER_EMAIL || session?.user?.email === contributor;
 
   const handleDownload = async () => {
     setIsDownloading(true);
@@ -169,23 +176,32 @@ export default function DashboardCard({
               {isDownloading ? 'Downloading...' : 'Download'}
             </button>
 
-            {/* Delete 버튼 (contributor만) */}
-            {isContributor && (
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className={`text-xs px-2.5 py-1 rounded-md transition-all duration-200 flex items-center gap-1 ${
-                  isDeleting
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-red-500 text-white hover:bg-red-600 shadow-sm hover:shadow'
-                }`}
+            {/* Delete 버튼 */}
+            <button
+              onClick={handleDelete}
+              disabled={!canDelete}
+              className={`text-xs px-2.5 py-1 rounded-md transition-all duration-200 flex items-center gap-1 shadow-sm hover:shadow ${
+                canDelete 
+                  ? 'bg-red-500 text-white hover:bg-red-600' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+              title={!canDelete ? "Only the contributor or admin can delete this dashboard" : ""}
+            >
+              <svg 
+                className="w-3.5 h-3.5" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                {isDeleting ? 'Deleting...' : 'Delete'}
-              </button>
-            )}
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth="2" 
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+              Delete
+            </button>
           </div>
         </div>
         

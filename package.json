@@ -11,6 +11,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.723.0",
     "@aws-sdk/client-s3": "^3.723.0",
+    "@aws-sdk/lib-dynamodb": "^3.751.0",
     "@aws-sdk/util-dynamodb": "^3.723.0",
     "@datadog/browser-rum": "^5.32.0",
     "autoprefixer": "^10.4.20",
@@ -20,6 +21,7 @@
     "dd-trace": "^5.28.0",
     "lucide-react": "^0.465.0",
     "next": "14.2.16",
+    "next-auth": "^4.24.11",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.5.5",

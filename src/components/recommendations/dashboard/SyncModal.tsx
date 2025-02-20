@@ -66,13 +66,24 @@ export default function SyncModal({ isOpen, onClose, dashboards }: SyncModalProp
         // S3에서 대시보드 데이터 가져오기
         const dashboardData = await getDashboardData(dashboard.s3Key);
         
-        // Datadog API로 대시보드 생성
-        await createDatadogDashboard(
-          dashboardData,
-          form.targetApiKey,
-          form.targetAppKey,
-          getApiUrl(form.targetApiUrl)
-        );
+        // 수정된 엔드포인트 주소 (/dashboard -> /dashboards)
+        const response = await fetch('/api/sync/dashboards', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            dashboardData: dashboardData,
+            apiKey: form.targetApiKey,
+            appKey: form.targetAppKey,
+            apiUrl: getApiUrl(form.targetApiUrl)
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to sync dashboard');
+        }
 
         // 진행 상황 업데이트
         setSyncProgress(i + 1);
