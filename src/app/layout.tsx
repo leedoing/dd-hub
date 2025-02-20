@@ -4,6 +4,7 @@ import "./globals.css";
 import { DatadogRUM } from "@/components/common/DatadogRUM";
 import { Layout } from '@/components/layout/Layout';
 import { Providers } from "./providers";
+import { Inter } from 'next/font/google';
 
 const geistSans = localFont({
   src: [
@@ -27,6 +28,8 @@ const geistMono = localFont({
   variable: '--font-geist-mono',
 });
 
+const inter = Inter({ subsets: ['latin'] });
+
 export const metadata: Metadata = {
   title: "Datadog Hub",
   description: "Datadog Hub provides recommendations for various Dashboards and Monitors, and offers synchronization functionality for Dashboards and Monitors between accounts.",
@@ -42,7 +45,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased ${inter.className}`}>
         <Providers>
           <DatadogRUM />
           <Layout>{children}</Layout>

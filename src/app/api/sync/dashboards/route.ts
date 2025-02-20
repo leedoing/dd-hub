@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { syncDashboards } from '@/lib/datadog-service';
+import initializeTracer from '@/lib/datadog-tracer';
+
+// API 라우트의 시작점에서 tracer 초기화
+initializeTracer();
 
 export async function POST(request: Request) {
   try {

@@ -19,6 +19,9 @@ const handler = NextAuth({
   session: {
     strategy: 'jwt',
   },
+  pages: {
+    signIn: '/auth/signin',
+  },
   callbacks: {
     async signIn({ user }) {
       try {
@@ -74,19 +77,10 @@ const handler = NextAuth({
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // 프로덕션과 개발 환경 모두 처리
-      const productionUrl = 'https://dd-hub.leedoing.com';
-      const isProduction = process.env.NODE_ENV === 'production';
-      const finalBaseUrl = isProduction ? productionUrl : baseUrl;
-      
-      // 상대 URL인 경우 baseUrl과 결합
-      if (url.startsWith('/')) {
-        return `${finalBaseUrl}${url}`;
-      } else if (new URL(url).origin === finalBaseUrl) {
-        return url;
-      }
-      return finalBaseUrl;
-    },
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      if (new URL(url).origin === baseUrl) return url
+      return baseUrl
+    }
   },
 });
 
