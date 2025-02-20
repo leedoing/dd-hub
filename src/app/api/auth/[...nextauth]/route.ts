@@ -9,14 +9,6 @@ const client = new DynamoDBClient({
 
 const docClient = DynamoDBDocumentClient.from(client);
 
-// 환경변수 로깅
-console.log('AUTH ENV:', {
-  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID?.slice(0, 10) + '...',
-  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET?.slice(0, 10) + '...',
-  NODE_ENV: process.env.NODE_ENV
-});
-
 const handler = NextAuth({
   providers: [
     GoogleProvider({
@@ -24,8 +16,6 @@ const handler = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  // 디버그 모드 활성화
-  debug: true,
   session: {
     strategy: 'jwt',
   },
@@ -33,13 +23,7 @@ const handler = NextAuth({
     signIn: '/auth/signin',
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
-      // 로그인 시도 정보 로깅
-      console.log('Sign in attempt:', {
-        user: { email: user.email },
-        account: { provider: account?.provider },
-        profile: { email: profile?.email }
-      });
+    async signIn({ user }) {
       try {
         // 사용자가 이미 존재하는지 확인
         const getResult = await docClient.send(
