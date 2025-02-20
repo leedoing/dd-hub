@@ -11,14 +11,20 @@ function HomeContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(true);
 
   useEffect(() => {
+    // 이미 로그인된 경우 모달 닫기
+    if (session) {
+      setShowLoginModal(false);
+      return;
+    }
+
     // URL 파라미터에서 showLogin과 callbackUrl 확인
     const shouldShowLogin = searchParams.get('showLogin') === 'true';
     const callbackUrl = searchParams.get('callbackUrl');
 
-    if (shouldShowLogin && !session) {
+    if (shouldShowLogin) {
       setShowLoginModal(true);
     }
 
