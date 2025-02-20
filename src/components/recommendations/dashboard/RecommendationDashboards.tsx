@@ -95,19 +95,6 @@ export default function RecommendationDashboards() {
     }
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const contributorPassword = process.env.NEXT_PUBLIC_CONTRIBUTOR_PASSWORD;
-    
-    if (password === contributorPassword) {
-      setIsAuthenticated(true);
-      setIsModalOpen(false);
-      setError('');
-    } else {
-      setError('Invalid password');
-    }
-  };
-
   const handleFilterChange = (filterType: keyof Filter, value: string) => {
     setFilters(prev => ({
       ...prev,
