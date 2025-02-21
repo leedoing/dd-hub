@@ -62,7 +62,7 @@ const MonitorSyncForm = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
 
-      const response = await fetch('/api/sync/monitor', {
+      const response = await fetch('/api/sync/monitors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
