@@ -31,18 +31,17 @@ const handler = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
     }),
   ],
-  // debug 모드 활성화
+  secret: process.env.NEXTAUTH_SECRET,
   debug: true,
-  // 세션 설정 추가
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60,
   },
   pages: {
     signIn: '/auth/signin',
   },
   callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
+    async signIn({ user, account, profile }) {
       console.log("SignIn callback:", { user, account, profile });
       try {
         // 사용자가 이미 존재하는지 확인
@@ -76,7 +75,7 @@ const handler = NextAuth({
         return false;
       }
     },
-    async session({ session, user, token }) {
+    async session({ session, token }) {
       console.log("Session callback:", { session, token });
       if (session.user?.email) {
         try {
@@ -108,7 +107,7 @@ const handler = NextAuth({
       console.log("Redirect callback:", { url, baseUrl });
       return url.startsWith(baseUrl) ? url : baseUrl;
     },
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account }) {
       console.log("JWT callback:", { token, user, account });
       return token;
     },
