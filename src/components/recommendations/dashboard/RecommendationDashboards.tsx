@@ -393,9 +393,9 @@ export default function RecommendationDashboards() {
 
   // 세션 변경 시 로깅 추가
   useEffect(() => {
-    console.log('Session updated:', session);
-    console.log('User role:', userRole);
-    console.log('Is authenticated:', isAuthenticated);
+    // console.log('Session updated:', session);
+    // console.log('User role:', userRole);
+    // console.log('Is authenticated:', isAuthenticated);
   }, [session, userRole, isAuthenticated]);
 
   return (

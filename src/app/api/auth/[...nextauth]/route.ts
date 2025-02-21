@@ -3,7 +3,7 @@ import { DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dyn
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-// 클라이언트 생성 전에 환경 변수 확인
+// AWS 설정 로그는 유지 (문제 발생 시 디버깅에 유용)
 console.log('AWS Config:', {
   region: process.env.NEXT_PUBLIC_AWS_REGION,
   hasAccessKey: !!process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
@@ -24,15 +24,6 @@ const docClient = DynamoDBDocumentClient.from(client, {
   },
 });
 
-// 환경 변수 디버깅
-console.log('Auth Config:', {
-  hasSecret: !!process.env.NEXTAUTH_SECRET,
-  secretLength: process.env.NEXTAUTH_SECRET?.length,
-  nextAuthUrl: process.env.NEXTAUTH_URL,
-  hasGoogleId: !!process.env.GOOGLE_CLIENT_ID,
-  hasGoogleSecret: !!process.env.GOOGLE_CLIENT_SECRET
-});
-
 const handler = NextAuth({
   providers: [
     GoogleProvider({
@@ -50,8 +41,7 @@ const handler = NextAuth({
     signIn: '/auth/signin',
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
-      console.log("SignIn callback:", { user, account, profile });
+    async signIn({ user }) {
       try {
         // 사용자가 이미 존재하는지 확인
         const getResult = await docClient.send(
@@ -77,15 +67,13 @@ const handler = NextAuth({
           );
         }
 
-        console.log('SignIn callback - DynamoDB result:', getResult.Item);
         return true;
       } catch (error) {
         console.error('SignIn error:', error);
         return false;
       }
     },
-    async session({ session, token }) {
-      console.log("Session callback:", { session, token });
+    async session({ session }) {
       if (session.user?.email) {
         try {
           const getResult = await docClient.send(
@@ -103,8 +91,6 @@ const handler = NextAuth({
           // session.user에 isContributor 할당
           session.user.isContributor = isContributor;
           
-          console.log('Session callback - Raw DynamoDB result:', getResult.Item);
-          console.log('Session callback - Processed isContributor:', isContributor);
         } catch (error) {
           console.error('Session error:', error);
           session.user.isContributor = false;
@@ -113,11 +99,9 @@ const handler = NextAuth({
       return session;
     },
     async redirect({ url, baseUrl }) {
-      console.log("Redirect callback:", { url, baseUrl });
       return url.startsWith(baseUrl) ? url : baseUrl;
     },
-    async jwt({ token, user, account }) {
-      console.log("JWT callback:", { token, user, account });
+    async jwt({ token }) {
       return token;
     },
   },
