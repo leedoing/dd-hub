@@ -24,6 +24,15 @@ const docClient = DynamoDBDocumentClient.from(client, {
   },
 });
 
+// 환경 변수 디버깅
+console.log('Auth Config:', {
+  hasSecret: !!process.env.NEXTAUTH_SECRET,
+  secretLength: process.env.NEXTAUTH_SECRET?.length,
+  nextAuthUrl: process.env.NEXTAUTH_URL,
+  hasGoogleId: !!process.env.GOOGLE_CLIENT_ID,
+  hasGoogleSecret: !!process.env.GOOGLE_CLIENT_SECRET
+});
+
 const handler = NextAuth({
   providers: [
     GoogleProvider({
