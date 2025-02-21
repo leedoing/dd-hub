@@ -5,6 +5,7 @@ frontend:
       commands:
         - npm install -g pnpm
         - pnpm install
+        - 'echo "NEXTAUTH_SECRET value length: ${#NEXTAUTH_SECRET}"'
         - |
           cat << EOF > .env.local
           NEXT_PUBLIC_AWS_ACCESS_KEY_ID='${NEXT_PUBLIC_AWS_ACCESS_KEY_ID}'
@@ -23,8 +24,7 @@ frontend:
           NEXTAUTH_URL='https://dd-hub.leedoing.com'
           AWS_REGION='${NEXT_PUBLIC_AWS_REGION}'
           EOF
-        - 'echo "Environment variables set:"'
-        - 'env | grep NEXTAUTH'
+        - 'cat .env.local'
     build:
       commands:
         - pnpm run build
