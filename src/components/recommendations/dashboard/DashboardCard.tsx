@@ -60,6 +60,18 @@ const formatDescription = (text: string) => {
 
 const MASTER_EMAIL = 'lluckyy77@gmail.com';  // 마스터 권한을 가진 이메일
 
+// 날짜 포맷팅 함수 수정
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}/${month}/${day} ${hours}:${minutes}`;
+};
+
 export default function DashboardCard({
   id,
   title,
@@ -176,32 +188,34 @@ export default function DashboardCard({
               {isDownloading ? 'Downloading...' : 'Download'}
             </button>
 
-            {/* Delete 버튼 */}
-            <button
-              onClick={handleDelete}
-              disabled={!canDelete}
-              className={`text-xs px-2.5 py-1 rounded-md transition-all duration-200 flex items-center gap-1 shadow-sm hover:shadow ${
-                canDelete 
-                  ? 'bg-red-500 text-white hover:bg-red-600' 
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-              title={!canDelete ? "Only the contributor or admin can delete this dashboard" : ""}
-            >
-              <svg 
-                className="w-3.5 h-3.5" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
+            {/* Delete 버튼 - contributor일 때만 표시 */}
+            {isContributor && canDelete && (
+              <button
+                onClick={handleDelete}
+                disabled={!canDelete}
+                className={`text-xs px-2.5 py-1 rounded-md transition-all duration-200 flex items-center gap-1 shadow-sm hover:shadow ${
+                  canDelete 
+                    ? 'bg-red-500 text-white hover:bg-red-600' 
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+                title={!canDelete ? "Only the contributor or admin can delete this dashboard" : ""}
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth="2" 
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-              Delete
-            </button>
+                <svg 
+                  className="w-3.5 h-3.5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth="2" 
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                Delete
+              </button>
+            )}
           </div>
         </div>
         
@@ -232,7 +246,6 @@ export default function DashboardCard({
         
         {/* 태그와 기여자 정보를 한 줄로 정렬 */}
         <div className="flex justify-between items-center">
-          {/* 왼쪽: 태그들 */}
           <div className="flex items-center gap-2">
             <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">
               {target}
@@ -242,9 +255,9 @@ export default function DashboardCard({
             </span>
           </div>
           
-          {/* 오른쪽: 기여자 정보 */}
+          {/* 오른쪽: 기여자 정보와 생성일 */}
           <div className="text-sm text-gray-500">
-            Contributed by {contributor}
+            Contributed by {contributor} • {formatDate(createdAt)}
           </div>
         </div>
       </div>

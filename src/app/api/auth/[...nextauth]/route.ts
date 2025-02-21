@@ -3,11 +3,26 @@ import { DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dyn
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-const client = new DynamoDBClient({
-  region: process.env.AWS_REGION,
+// 클라이언트 생성 전에 환경 변수 확인
+console.log('AWS Config:', {
+  region: process.env.NEXT_PUBLIC_AWS_REGION,
+  hasAccessKey: !!process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+  hasSecretKey: !!process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY
 });
 
-const docClient = DynamoDBDocumentClient.from(client);
+const client = new DynamoDBClient({
+  region: process.env.NEXT_PUBLIC_AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY || '',
+  }
+});
+
+const docClient = DynamoDBDocumentClient.from(client, {
+  marshallOptions: {
+    removeUndefinedValues: true,
+  },
+});
 
 const handler = NextAuth({
   providers: [
@@ -49,16 +64,16 @@ const handler = NextAuth({
           );
         }
 
+        console.log('SignIn callback - DynamoDB result:', getResult.Item);
         return true;
       } catch (error) {
-        console.error('DynamoDB Error:', error);
-        return true; // 에러가 발생해도 로그인은 허용
+        console.error('SignIn callback error:', error);
+        return false;
       }
     },
     async session({ session }) {
       if (session.user?.email) {
         try {
-          // 사용자의 Contributor 상태 조회
           const getResult = await docClient.send(
             new GetCommand({
               TableName: 'hj-dd-hub-login',
@@ -68,10 +83,17 @@ const handler = NextAuth({
             })
           );
 
-          // session에 isContributor 정보 추가
-          session.user.isContributor = getResult.Item?.isContributor || false;
+          // 명시적으로 boolean 타입으로 변환
+          const isContributor = getResult.Item?.isContributor === true;
+          
+          // session.user에 isContributor 할당
+          session.user.isContributor = isContributor;
+          
+          console.log('Session callback - Raw DynamoDB result:', getResult.Item);
+          console.log('Session callback - Processed isContributor:', isContributor);
         } catch (error) {
-          console.error('DynamoDB Error:', error);
+          console.error('Session callback error:', error);
+          session.user.isContributor = false;
         }
       }
       return session;

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Modal from '@/components/common/Modal';
-import { getDashboardData, createDatadogDashboard } from '@/utils/aws';
+import { getDashboardData } from '@/utils/aws';
 
 interface DashboardData {
   id: string;

@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Modal from '@/components/common/Modal';
 import UploadModal from './UploadModal';
 import DashboardCard from './DashboardCard';
 import SyncModal from './SyncModal';
-import { getDashboards, uploadDashboard, deleteDashboard } from '@/utils/aws';
+import { getDashboards, uploadDashboard } from '@/utils/aws';
 import { datadogRum } from '@datadog/browser-rum';
 
 type UserRole = 'contributor' | 'user' | null;
@@ -32,12 +31,35 @@ interface DashboardData {
   updatedAt: string;
 }
 
+// SearchBar 컴포넌트를 외부로 이동
+interface SearchBarProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const SearchBar = ({ value, onChange }: SearchBarProps) => (
+  <div className="mb-6">
+    <div className="relative">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Search by title or description..."
+        className="w-full px-4 py-2 pl-10 pr-4 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
+      />
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+);
+
 export default function RecommendationDashboards() {
-  const router = useRouter();
   const { data: session } = useSession();
-  const [userRole, setUserRole] = useState<UserRole>(null);
+  const [userRole, setUserRole] = useState<UserRole>('user');
   const [isModalOpen, setIsModalOpen] = useState(true);
-  const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState('');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -76,22 +98,36 @@ export default function RecommendationDashboards() {
   };
 
   const handleRoleSelect = async (role: UserRole) => {
-    setUserRole(role);
     if (role === 'user') {
       setIsModalOpen(false);
       setIsAuthenticated(true);
     } else if (role === 'contributor') {
-      // Contributor 선택 시 권한 체크
-      if (!session?.user?.isContributor) {
-        // 권한 없음 메시지 표시
-        setError('You currently don\'t have Contributor access. Please send an email to lluckyy77@gmail.com to request access.');
-        return;
+      try {
+        // DynamoDB에서 직접 사용자 권한 확인
+        const response = await fetch('/api/auth/check-contributor', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: session?.user?.email
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (!data.isContributor) {
+          setError('You currently don\'t have Contributor access. Please send an email to lluckyy77@gmail.com to request access.');
+          return;
+        }
+
+        setUserRole('contributor');
+        setIsModalOpen(false);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Failed to check contributor status:', error);
+        setError('Failed to verify contributor status. Please try again.');
       }
-      // 권한이 있으면 인증된 상태로 설정
-      setIsAuthenticated(true);
-      setIsModalOpen(false);
-      // 업로드 버튼이 보이도록 userRole을 contributor로 설정
-      setUserRole('contributor');
     }
   };
 
@@ -138,34 +174,48 @@ export default function RecommendationDashboards() {
     fetchDashboards();  // 인증 상태와 관계없이 초기에 데이터 로드
   }, []); // isAuthenticated 의존성 제거
 
-  const getFilteredDashboards = (dashboards: DashboardData[], searchQuery: string) => {
-    const filtered = dashboards.filter(dashboard => {
+  const getFilteredDashboards = (dashboards: DashboardData[], query: string) => {
+    // 먼저 날짜순으로 정렬
+    const sortedDashboards = [...dashboards].sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    // 그 다음 필터링
+    const filtered = sortedDashboards.filter(dashboard => {
       const matchesTarget = filters.targets === 'all' || filters.targets === dashboard.target;
       const matchesLanguage = filters.language === 'all' || filters.language === dashboard.language;
       const matchesContributor = filters.contributor === 'all' || filters.contributor === dashboard.contributor;
       
-      if (!searchQuery) return matchesTarget && matchesLanguage && matchesContributor;
+      if (!query) return matchesTarget && matchesLanguage && matchesContributor;
 
-      const query = searchQuery.toLowerCase();
+      const searchLower = query.toLowerCase();
       return (
         matchesTarget && 
         matchesLanguage && 
         matchesContributor &&
-        (dashboard.title.toLowerCase().includes(query) ||
-         dashboard.description.toLowerCase().includes(query))
+        (
+          dashboard.title.toLowerCase().includes(searchLower) ||
+          dashboard.description.toLowerCase().includes(searchLower)
+        )
       );
     });
 
     return filtered;
   };
 
+  // 검색어 상태 관리
   const [searchQuery, setSearchQuery] = useState('');
+
+  // 검색어 변경 핸들러
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
 
   const filteredDashboards = useMemo(() => {
     return getFilteredDashboards(dashboards, searchQuery);
   }, [dashboards, searchQuery, filters]);
 
-  const handleDelete = async (dashboardId: string) => {
+  const handleDelete = async (_dashboardId: string) => {
     await fetchDashboards();  // 목록 새로고침
   };
 
@@ -323,7 +373,6 @@ export default function RecommendationDashboards() {
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-    setUserRole('user');
     setIsAuthenticated(true);
   };
 
@@ -342,6 +391,13 @@ export default function RecommendationDashboards() {
     }
   }, [session, userRole]);
 
+  // 세션 변경 시 로깅 추가
+  useEffect(() => {
+    console.log('Session updated:', session);
+    console.log('User role:', userRole);
+    console.log('Is authenticated:', isAuthenticated);
+  }, [session, userRole, isAuthenticated]);
+
   return (
     <div className="h-full flex flex-col bg-white rounded-lg shadow-lg p-8">
       <h2 className="text-2xl font-bold mb-8 text-purple-900">Dashboard Recommendations</h2>
@@ -349,8 +405,12 @@ export default function RecommendationDashboards() {
       <div className="flex gap-6 flex-1 min-h-0">
         <FilterSection />
         <div className="flex-1 flex flex-col min-h-0">
+          <SearchBar 
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+          
           <div className="flex justify-between items-center mb-6">
-            {/* User 역할일 때만 Select all과 Sync 버튼 표시 */}
             {userRole === 'user' ? (
               <>
                 <div className="flex items-center space-x-2">
@@ -366,20 +426,20 @@ export default function RecommendationDashboards() {
 
                 <button
                   onClick={() => setIsSyncModalOpen(true)}
-                  disabled={selectedCount === 0}
+                  disabled={selectedCount === 0 || !isAuthenticated}
                   className={`px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 ${
-                    selectedCount === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                    selectedCount === 0 || !isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
                   Sync Selected ({selectedCount})
                 </button>
               </>
             ) : (
-              /* Contributor 역할일 때는 Upload 버튼만 표시하고 오른쪽 정렬 */
               <div className="flex justify-end w-full">
                 <button
                   onClick={() => setIsUploadModalOpen(true)}
-                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                  disabled={!isAuthenticated}
+                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Upload Dashboard
                 </button>
@@ -412,7 +472,6 @@ export default function RecommendationDashboards() {
                       onDelete={() => handleDelete(dashboard.id)}
                       isSelected={selectedDashboards.includes(dashboard.id)}
                       onSelect={() => handleDashboardSelect(dashboard.id)}
-                      disabled={!isAuthenticated}
                     />
                   ))}
                   <Pagination />
@@ -446,9 +505,8 @@ export default function RecommendationDashboards() {
               <p className="text-red-600 text-sm mt-2">{error}</p>
             )}
             
-            {/* 안내 메시지 추가 */}
             <p className="text-sm text-gray-600 mt-4 italic">
-            If you're interested in becoming a contributor, please email{' '}
+              If you&apos;re interested in becoming a contributor, please email{' '}
               <a 
                 href="mailto:lluckyy77@gmail.com"
                 className="text-purple-600 hover:text-purple-700"
