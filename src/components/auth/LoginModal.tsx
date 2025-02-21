@@ -16,7 +16,9 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         Login is mandatory to access Datadog Hub.
         </p>
         <button
-          onClick={() => signIn("google", { callbackUrl: "/" })}
+          onClick={() => signIn("google", { 
+            callbackUrl: window.location.href  // 현재 페이지 URL로 리다이렉트
+          })}
           className="w-full h-[38px] flex items-center bg-[#DB4437] hover:bg-[#c53929] text-white rounded transition-colors overflow-hidden border border-black"
           title="Sign in with Google"
         >
