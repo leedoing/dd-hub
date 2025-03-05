@@ -233,7 +233,7 @@ export default function RecommendationDashboards() {
         </button>
         
         <div className="flex space-x-1">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+          {Array.from({ length: Math.min(totalPages, 15) }, (_, i) => i + 1).map(page => (
             <button
               key={page}
               onClick={() => setCurrentPage(page)}

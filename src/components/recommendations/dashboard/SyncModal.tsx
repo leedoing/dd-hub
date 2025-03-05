@@ -182,7 +182,12 @@ export default function SyncModal({ isOpen, onClose, dashboards }: SyncModalProp
   }, [isProcessing, syncProgress, dashboards.length, syncComplete]);
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Sync Dashboards" className="max-w-2xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Sync Dashboards"
+      className="max-w-6xl"
+    >
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Target API Key</label>

@@ -151,7 +151,12 @@ export default function RecommendationMonitors() {
   };
 
   const getFilteredMonitors = (monitors: MonitorData[], query: string) => {
-    return monitors.filter((monitor) => {
+    // 먼저 날짜순으로 정렬 (생성 시간 기준 내림차순)
+    const sortedMonitors = [...monitors].sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    return sortedMonitors.filter((monitor) => {
       // 검색어 필터링
       const matchesQuery =
         query === '' ||
@@ -202,7 +207,7 @@ export default function RecommendationMonitors() {
           Previous
         </button>
         <div className="flex space-x-1">
-          {Array.from({ length: Math.min(totalPages, 3) }, (_, i) => {
+          {Array.from({ length: Math.min(totalPages, 15) }, (_, i) => {
             const pageNumber = i + 1;
             return (
               <button
@@ -333,12 +338,33 @@ export default function RecommendationMonitors() {
   };
 
   const handleSelectAll = () => {
-    if (selectedMonitors.length === paginatedMonitors.length) {
-      setSelectedMonitors([]);
+    // 현재 필터링된 모든 모니터의 ID를 가져옴
+    const allFilteredMonitorIds = getFilteredMonitors(monitors, searchQuery).map(monitor => monitor.id);
+    
+    // 모든 필터링된 모니터가 선택되어 있는지 확인
+    const allSelected = allFilteredMonitorIds.every(id => 
+      selectedMonitors.includes(id)
+    );
+    
+    if (allSelected) {
+      // 모두 선택되어 있으면 필터링된 모니터들을 선택 해제
+      setSelectedMonitors(prev => 
+        prev.filter(id => !allFilteredMonitorIds.includes(id))
+      );
     } else {
-      setSelectedMonitors(paginatedMonitors.map((monitor) => monitor.id));
+      // 모두 선택되어 있지 않으면 필터링된 모니터들을 모두 선택
+      setSelectedMonitors(prev => [
+        ...prev,
+        ...allFilteredMonitorIds.filter(id => !prev.includes(id))
+      ]);
     }
   };
+
+  const isAllSelected = useMemo(() => {
+    const filteredMonitors = getFilteredMonitors(monitors, searchQuery);
+    return filteredMonitors.length > 0 && 
+           filteredMonitors.every(monitor => selectedMonitors.includes(monitor.id));
+  }, [monitors, searchQuery, selectedMonitors, filters]);
 
   return (
     <div className="h-full flex flex-col bg-white rounded-lg shadow-lg p-8">
@@ -366,12 +392,9 @@ export default function RecommendationMonitors() {
                 <input
                   type="checkbox"
                   className="h-4 w-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
-                  checked={
-                    paginatedMonitors.length > 0 &&
-                    selectedMonitors.length === paginatedMonitors.length
-                  }
+                  checked={isAllSelected}
                   onChange={handleSelectAll}
-                  disabled={paginatedMonitors.length === 0}
+                  disabled={getFilteredMonitors(monitors, searchQuery).length === 0}
                 />
                 <span className="text-sm text-gray-600">Select all</span>
               </div>

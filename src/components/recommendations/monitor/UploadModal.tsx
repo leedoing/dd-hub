@@ -264,7 +264,7 @@ export default function UploadModal({ isOpen, onClose, onUpload, email }: Upload
       isOpen={isOpen}
       onClose={handleClose}
       title={step === 'upload' ? 'Upload Monitor' : 'Monitor Details'}
-      className="w-[800px] max-w-[90vw]" // 모달 너비 2배로 증가
+      className="max-w-4xl"
     >
       {step === 'upload' ? (
         // 첫 번째 단계: 파일 업로드 또는 JSON 입력
