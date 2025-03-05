@@ -83,10 +83,9 @@ export async function syncDashboards({
           );
 
           return {
-            sourceId: dashboard.id,
-            targetId: createdDashboard.data.id,
             title: createdDashboard.data.title,
-            status: 'success'
+            status: 'success',
+            errorMessage: ''
           };
         } catch (error) {
           const errorMessage = error instanceof Error 
@@ -94,17 +93,15 @@ export async function syncDashboards({
             : 'Unknown error occurred';
             
           return {
-            sourceId: dashboard.id,
             title: dashboard.title,
             status: 'failed',
-            error: errorMessage
+            errorMessage: errorMessage
           };
         }
       })
     );
 
     return {
-      success: true,
       data: { dashboards: results },
       totalCount: results.length,
       successCount: results.filter(r => r.status === 'success').length,
@@ -165,6 +162,17 @@ export async function syncMonitors(params: any) {
     }
 
     console.log('DatadogService - Filtered monitors count:', filteredMonitors.length);
+    
+    // 첫 번째 모니터의 구조 로깅 (디버깅용)
+    if (filteredMonitors.length > 0) {
+      console.log('DatadogService - First monitor structure:', JSON.stringify(filteredMonitors[0], null, 2));
+      
+      // trace-analytics alert 타입 모니터가 있는지 확인하고 로깅
+      const traceAnalyticsMonitor = filteredMonitors.find((m: Monitor) => m.type === 'trace-analytics alert');
+      if (traceAnalyticsMonitor) {
+        console.log('DatadogService - trace-analytics alert monitor found:', JSON.stringify(traceAnalyticsMonitor, null, 2));
+      }
+    }
 
     // 각 모니터를 타겟 환경에 복제
     const results = await Promise.all(
@@ -178,6 +186,9 @@ export async function syncMonitors(params: any) {
             tags: monitor.tags,
             options: monitor.options
           };
+          
+          // 실제 Datadog API로 전송되는 데이터 구조 로깅
+          console.log(`DatadogService - Creating monitor "${monitor.name}" with data:`, JSON.stringify(createMonitorRequest, null, 2));
 
           const createdMonitor = await axios.post(
             `${targetApiUrl}/monitor`,
@@ -191,23 +202,25 @@ export async function syncMonitors(params: any) {
               }
             }
           );
+          
+          console.log(`DatadogService - Monitor "${monitor.name}" created successfully with ID:`, createdMonitor.data.id);
 
           return {
-            sourceId: monitor.id,
-            targetId: createdMonitor.data.id,
-            name: createdMonitor.data.name,
-            status: 'success'
+            title: createdMonitor.data.name,
+            status: 'success',
+            errorMessage: ''
           };
         } catch (error) {
           const errorMessage = error instanceof Error 
             ? error.message 
             : 'Unknown error occurred';
             
+          console.error(`DatadogService - Failed to create monitor "${monitor.name}":`, errorMessage);
+          
           return {
-            sourceId: monitor.id,
-            name: monitor.name,
+            title: monitor.name,
             status: 'failed',
-            error: errorMessage
+            errorMessage: errorMessage
           };
         }
       })
@@ -216,8 +229,7 @@ export async function syncMonitors(params: any) {
     console.log('DatadogService - Sync results:', results);
 
     return {
-      success: true,
-      data: { monitors: results },
+      data: { dashboards: results },
       totalCount: results.length,
       successCount: results.filter(r => r.status === 'success').length,
       failureCount: results.filter(r => r.status === 'failed').length

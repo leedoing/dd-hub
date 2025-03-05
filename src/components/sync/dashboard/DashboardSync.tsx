@@ -4,14 +4,11 @@ import { useState } from 'react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface SyncResult {
-  success: boolean;
   data?: {
     dashboards: Array<{
-      sourceId: string;
-      targetId?: string;
       title: string;
       status: 'success' | 'failed';
-      error?: string;
+      errorMessage?: string;
     }>;
   };
   totalCount: number;
@@ -166,7 +163,16 @@ const DashboardSync = () => {
           <h3 className="text-lg font-semibold mb-4 text-purple-900">Sync Results:</h3>
           <div className="bg-gray-50 p-6 rounded-md overflow-auto border border-purple-100">
             <pre className="text-gray-800 whitespace-pre-wrap font-mono text-sm">
-              {JSON.stringify(result, null, 2)}
+              {JSON.stringify({
+                dashboards: result.data?.dashboards.map(dashboard => ({
+                  title: dashboard.title,
+                  status: dashboard.status,
+                  errorMessage: dashboard.errorMessage || ""
+                })),
+                totalCount: result.totalCount,
+                successCount: result.successCount,
+                failureCount: result.failureCount
+              }, null, 2)}
             </pre>
             <div className="mt-4 flex gap-4 text-sm">
               <div className="text-purple-900">

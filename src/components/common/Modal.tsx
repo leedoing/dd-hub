@@ -7,9 +7,10 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  className?: string;
 }
 
-export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -20,7 +21,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
           onClick={onClose}
         />
         
-        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 z-50">
+        <div className={`relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 z-50 ${className || ''}`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-purple-900">{title}</h3>
             <button
