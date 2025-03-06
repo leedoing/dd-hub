@@ -186,7 +186,7 @@ export default function SyncModal({ isOpen, onClose, dashboards }: SyncModalProp
       isOpen={isOpen}
       onClose={handleClose}
       title="Sync Dashboards"
-      className="max-w-6xl"
+      className="max-w-[65rem]"
     >
       <div className="space-y-4">
         <div>
