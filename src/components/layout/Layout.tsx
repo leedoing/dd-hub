@@ -45,7 +45,7 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col max-w-[1550px] mx-auto">
+    <div className="min-h-screen flex flex-col max-w-[1400px] mx-auto px-8">
       <Header resetMenu={resetMenu} />
       <div className="flex flex-1">
         <Sidebar 

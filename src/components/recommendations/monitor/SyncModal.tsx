@@ -185,7 +185,7 @@ export default function SyncModal({ isOpen, onClose, monitors }: SyncModalProps)
       isOpen={isOpen}
       onClose={handleClose}
       title="Sync Monitors"
-      className="max-w-[65rem]"
+      className="max-w-4xl"
     >
       <div className="space-y-4">
         <div>
