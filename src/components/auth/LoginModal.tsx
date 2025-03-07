@@ -13,7 +13,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     <Modal isOpen={isOpen} onClose={onClose} title="Welcome to Datadog Hub">
       <div className="p-6 space-y-6">
         <p className="text-center text-gray-600">
-        Login is mandatory to access Datadog Hub.
+        Sign in is mandatory to access Datadog Hub.
         </p>
         <button
           onClick={() => signIn("google", { 
