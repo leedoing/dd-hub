@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { DatadogRUM } from "@/components/common/DatadogRUM";
+import { DatadogUserTracker } from "@/components/common/DatadogUserTracker";
 import { Layout } from '@/components/layout/Layout';
 import { Providers } from "./providers";
 import { Inter } from 'next/font/google';
@@ -48,6 +49,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased ${inter.className}`}>
         <Providers>
           <DatadogRUM />
+          <DatadogUserTracker />
           <Layout>{children}</Layout>
         </Providers>
       </body>

@@ -14,6 +14,7 @@
     "@aws-sdk/lib-dynamodb": "^3.751.0",
     "@aws-sdk/util-dynamodb": "^3.723.0",
     "@datadog/browser-rum": "^5.32.0",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
@@ -25,6 +26,7 @@
     "next-auth": "^4.24.11",
     "react": "^18",
     "react-dom": "^18",
+    "react-syntax-highlighter": "^15.6.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.4"
