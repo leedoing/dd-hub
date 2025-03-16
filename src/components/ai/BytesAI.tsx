@@ -243,8 +243,8 @@ export default function BytesAI() {
       
       // 타이핑 효과 설정
       const chunkSize = 1; // 한 글자씩 표시 (최소 단위)
-      const baseDelay = 30; // 기본 딜레이 (밀리초, 자연스러운 타이핑 속도)
-      const variance = 15; // 랜덤 딜레이를 추가해서 자연스럽게 만들기
+      const baseDelay = 17; // 기본 딜레이 (밀리초, 자연스러운 타이핑 속도)
+      const variance = 9; // 랜덤 딜레이를 추가해서 자연스럽게 만들기
       
       for (let i = 0; i < textLength; i += chunkSize) {
         const end = Math.min(i + chunkSize, textLength);
