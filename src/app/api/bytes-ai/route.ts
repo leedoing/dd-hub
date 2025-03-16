@@ -28,14 +28,51 @@ export async function POST(request: Request) {
       is_new_session: is_new_session
     });
 
+    // 모든 요청 헤더 로깅
+    console.log('All request headers:');
+    request.headers.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
+
+    // 헤더 설정
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // 클라이언트에서 전달된 Datadog 트레이싱 헤더가 있으면 추가
+    const datadogHeaders = [
+      'x-datadog-trace-id',
+      'x-datadog-parent-id',
+      'x-datadog-sampling-priority',
+      'x-datadog-origin'
+    ];
+    
+    let foundDatadogHeaders = false;
+    for (const header of datadogHeaders) {
+      const value = request.headers.get(header);
+      if (value) {
+        // 쉼표로 구분된 값이 있는 경우 첫 번째 값만 사용
+        const cleanValue = value.split(',')[0].trim();
+        console.log(`Found Datadog header: ${header}=${value} (using: ${cleanValue})`);
+        
+        // 헤더 이름을 소문자로 통일
+        headers[header.toLowerCase()] = cleanValue;
+        foundDatadogHeaders = true;
+      }
+    }
+    
+    if (!foundDatadogHeaders) {
+      console.log('No Datadog tracing headers found in request');
+    }
+
+    console.log('Lambda request headers:', headers);
+
     // Call the Lambda function without streaming
     const lambdaResponse = await fetch(
       'https://tevypdyuwkuqnedfkcrfbwkvxa0gmueq.lambda-url.ap-northeast-2.on.aws/',
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: JSON.stringify({ 
           query, 
           session_id: sessionId,

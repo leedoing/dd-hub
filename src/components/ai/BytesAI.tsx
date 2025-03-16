@@ -206,11 +206,48 @@ export default function BytesAI() {
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
       console.log('Sending request to BytesAI API:', userMessage);
+      
+      // 요청 헤더 설정
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Datadog RUM 트레이싱 헤더 명시적으로 추가
+      try {
+        if (datadogRum.getInternalContext) {
+          const rumContext = datadogRum.getInternalContext() as any;
+          console.log('Datadog RUM context:', rumContext);
+          
+          if (rumContext && rumContext.traceId) {
+            // 트레이스 ID와 스팬 ID가 문자열인지 확인
+            const traceId = String(rumContext.traceId);
+            const spanId = String(rumContext.spanId);
+            
+            console.log('Adding Datadog tracing headers:', {
+              traceId,
+              spanId
+            });
+            
+            // 명시적으로 트레이싱 헤더 추가 (소문자로 통일)
+            headers['x-datadog-trace-id'] = traceId;
+            headers['x-datadog-parent-id'] = spanId;
+            headers['x-datadog-sampling-priority'] = '1';
+            headers['x-datadog-origin'] = 'rum';
+          } else {
+            console.log('No Datadog RUM traceId available in context');
+          }
+        } else {
+          console.log('Datadog RUM getInternalContext not available');
+        }
+      } catch (error) {
+        console.error('Error adding Datadog tracing headers:', error);
+      }
+      
+      console.log('Request headers:', headers);
+      
       const response = await fetch('/api/bytes-ai', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: JSON.stringify({ 
           query: userMessage,
           session_id: sessionId,
