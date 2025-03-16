@@ -27,7 +27,7 @@ export async function uploadDashboard(dashboardData: any, metadata: any) {
   // S3에 JSON 파일 업로드
   try {
     await s3Client.send(new PutObjectCommand({
-      Bucket: 'hj-dd-hub-ㅡㅐ',
+      Bucket: 'hj-dd-hub',
       Key: s3Key,
       Body: JSON.stringify(dashboardData),
       ContentType: 'application/json',
@@ -232,8 +232,8 @@ export async function downloadDashboard(s3Key: string, title: string) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    // 파일명을 title로 설정하고 특수문자 제거
-    const fileName = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.json`;
+    // 파일명을 title 그대로 사용하고 .json 확장자만 추가
+    const fileName = `${title}.json`;
     a.download = fileName;
     document.body.appendChild(a);
     a.click();

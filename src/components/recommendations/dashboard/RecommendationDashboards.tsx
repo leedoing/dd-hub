@@ -38,17 +38,17 @@ interface SearchBarProps {
 }
 
 const SearchBar = ({ value, onChange }: SearchBarProps) => (
-  <div className="mb-6">
+  <div className="mb-3 sm:mb-6">
     <div className="relative">
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search by title or description..."
-        className="w-full px-4 py-2 pl-10 pr-4 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
+        className="w-full px-3 sm:px-4 py-1.5 sm:py-2 pl-8 sm:pl-10 pr-3 sm:pr-4 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
       />
-      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
+        <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
@@ -117,7 +117,7 @@ export default function RecommendationDashboards() {
         const data = await response.json();
         
         if (!data.isContributor) {
-          setError('You currently don\'t have Contributor access. Please send an email to lluckyy77@gmail.com to request access.');
+          setError('You currently don\'t have Contributor access. Please leave a message on LinkedIn to request access.');
           return;
         }
 
@@ -399,10 +399,10 @@ export default function RecommendationDashboards() {
   }, [session, userRole, isAuthenticated]);
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-lg shadow-lg p-8">
-      <h2 className="text-2xl font-bold mb-8 text-purple-900">Dashboard Recommendations</h2>
+    <div className="h-full flex flex-col bg-white rounded-lg shadow-lg p-4 sm:p-8">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-8 text-purple-900">Dashboard Recommendations</h2>
       
-      <div className="flex gap-6 flex-1 min-h-0">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6 flex-1 min-h-0">
         <FilterSection />
         <div className="flex-1 flex flex-col min-h-0">
           <SearchBar 
@@ -410,7 +410,7 @@ export default function RecommendationDashboards() {
             onChange={handleSearchChange}
           />
           
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
             {userRole === 'user' ? (
               <>
                 <div className="flex items-center space-x-2">
@@ -427,7 +427,7 @@ export default function RecommendationDashboards() {
                 <button
                   onClick={() => setIsSyncModalOpen(true)}
                   disabled={selectedCount === 0 || !isAuthenticated}
-                  className={`px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 ${
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 ${
                     selectedCount === 0 || !isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
@@ -439,7 +439,7 @@ export default function RecommendationDashboards() {
                 <button
                   onClick={() => setIsUploadModalOpen(true)}
                   disabled={!isAuthenticated}
-                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Upload Dashboard
                 </button>
@@ -506,12 +506,14 @@ export default function RecommendationDashboards() {
             )}
             
             <p className="text-sm text-gray-600 mt-4 italic">
-              If you&apos;re interested in becoming a contributor, please email{' '}
+              If you&apos;re interested in becoming a contributor, please leave a message on{' '}
               <a 
-                href="mailto:lluckyy77@gmail.com"
+                href="https://www.linkedin.com/in/hyunjin-lee-35a146b1/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-purple-600 hover:text-purple-700"
               >
-                lluckyy77@gmail.com
+                LinkedIn
               </a>
               {' '}with your reason for joining.
             </p>

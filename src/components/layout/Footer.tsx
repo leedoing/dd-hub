@@ -1,31 +1,38 @@
+'use client';
+
+import { datadogRum } from '@datadog/browser-rum';
+
 export default function Footer() {
-    return (
-      <footer className="bg-gray-50 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-sm text-gray-600">
-              © {new Date().getFullYear()} Datadog Sync Tool. All rights reserved.
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Questions? Contact:</span>
-              <a
-                href="mailto:lluckyy77@gmail.com"
-                className="text-purple-600 hover:text-purple-800 transition-colors text-sm"
-              >
-                lluckyy77@gmail.com
-              </a>
-              <span className="text-gray-400">|</span>
-              <a
-                href="https://github.com/leedoing/dd-hub"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-purple-600 hover:text-purple-800 transition-colors text-sm"
-              >
-                GitHub
-              </a>
-            </div>
-          </div>
+  const handleLinkClick = (linkType: string) => {
+    try {
+      datadogRum.addAction('Footer_Link_Click', {
+        link_type: linkType,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error tracking footer link click:', error);
+    }
+  };
+
+  return (
+    <footer className="py-3 md:py-6 px-2 md:px-8 border-t mt-auto">
+      <div className="flex flex-col sm:flex-row items-center justify-between text-gray-500 text-xs md:text-sm">
+        <div className="mb-2 sm:mb-0 text-center sm:text-left">
+          © {new Date().getFullYear()} Datadog Hub.
         </div>
-      </footer>
-    );
-  }
+        <div className="flex flex-wrap justify-center sm:justify-end gap-2 md:gap-4">
+          <span>Questions?</span>
+          <a
+            href="https://www.linkedin.com/in/hyunjin-lee-35a146b1/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-purple-600 hover:text-purple-800 transition-colors"
+            onClick={() => handleLinkClick('linkedin')}
+          >
+            LinkedIn
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}

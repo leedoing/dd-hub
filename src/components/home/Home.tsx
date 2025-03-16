@@ -53,17 +53,17 @@ function HomeContent() {
         {/* 메인 콘텐츠 */}
         <main className="flex-1 p-8">
           <div className="flex-1">
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <div className="space-y-8 max-w-[960px] mx-auto">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-8">
+      <div className="space-y-6 sm:space-y-8 max-w-[960px] mx-auto">
         {/* 소개 섹션 */}
         <section>
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800 font-medium">
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-800 text-sm sm:text-base font-medium">
               This is not an official Datadog service. This is a personal project created to enhance the convenience of using Datadog and for PoC (Proof of Concept) purposes.
                     Datadog API Keys and Application Keys used in this service are not stored.
             </p>
           </div>
-          <p className="text-gray-600 text-lg font-sans">
+          <p className="text-gray-600 text-base sm:text-lg font-sans">
                   This service helps you find the best Dashboards and Monitors for your Datadog setup. 
                 These resources are curated from Datadog's out-of-box content and real-world experience. 
                 You can sync Dashboards and Monitors between your Datadog accounts in just a few clicks.
@@ -71,7 +71,7 @@ function HomeContent() {
         </section>
 
                 {/* 주요 기능 섹션 - 순서 변경 및 이름 수정 */}
-        <section className="grid md:grid-cols-2 gap-6">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div className="bg-purple-50 p-6 rounded-lg">
                     <h2 className="text-xl font-semibold text-purple-900 mb-3">Dashboard Recommendations</h2>
             <ul className="space-y-2 text-gray-600">
@@ -152,7 +152,7 @@ function HomeContent() {
         </section>
 
                 {/* 주요 기능 섹션 - 순서 변경 및 이름 수정 */}
-                <section className="grid md:grid-cols-2 gap-6">
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="bg-purple-50 p-6 rounded-lg">
                     <h2 className="text-xl font-semibold text-purple-900 mb-3">Dashboard Synchronization</h2>
                     <ul className="space-y-2 text-gray-600">
@@ -216,9 +216,9 @@ function HomeContent() {
                 </div>
 
                 {/* Supported Regions 섹션 */}
-        <section className="bg-gray-50 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold text-purple-900 mb-4">Supported Regions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <section className="bg-gray-50 p-4 sm:p-6 rounded-lg">
+          <h2 className="text-xl font-semibold text-purple-900 mb-3 sm:mb-4">Supported Regions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {[
               'US1 (api.datadoghq.com)',
               'US3 (api.us3.datadoghq.com)',

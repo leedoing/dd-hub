@@ -56,7 +56,13 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
   ];
 
   const extractTitleFromFilename = (filename: string) => {
-    return filename.split('--')[0];
+    // First remove the .json extension if present
+    const withoutExtension = filename.endsWith('.json') 
+      ? filename.slice(0, -5) // Remove .json (5 characters)
+      : filename;
+    
+    // Then split by -- if present (for Datadog export format)
+    return withoutExtension.split('--')[0];
   };
 
   useEffect(() => {

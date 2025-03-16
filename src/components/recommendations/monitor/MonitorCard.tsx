@@ -2,6 +2,21 @@
 
 import { useState } from 'react';
 import { downloadMonitor } from '@/utils/aws';
+import { useSession } from 'next-auth/react';
+
+const MASTER_EMAIL = 'lluckyy77@gmail.com';  // 마스터 권한을 가진 이메일
+
+// 날짜 포맷팅 함수
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}/${month}/${day} ${hours}:${minutes}`;
+};
 
 interface MonitorCardProps {
   id: string;
@@ -43,6 +58,11 @@ export default function MonitorCard({
   onDelete
 }: MonitorCardProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const { data: session } = useSession();
+  
+  // 마스터 이메일이거나 본인이 작성한 모니터인 경우 삭제 가능
+  const canDelete = session?.user?.email === MASTER_EMAIL || (isContributor && session?.user?.email === contributor);
+
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
@@ -54,18 +74,6 @@ export default function MonitorCard({
     } finally {
       setIsDownloading(false);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    }).replace(',', '');
   };
 
   return (
@@ -84,12 +92,23 @@ export default function MonitorCard({
           <div className="flex items-center gap-1.5 ml-auto">
             <button
               onClick={() => setIsDetailOpen(!isDetailOpen)}
-              className="text-xs px-2.5 py-1 rounded-md transition-all duration-200 text-purple-600 hover:text-purple-700 hover:bg-purple-50 font-medium flex items-center gap-1"
+              className="text-xs px-2.5 py-1 rounded-md transition-all duration-200 flex items-center gap-1 bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm hover:shadow"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              Detail
+              {isDetailOpen ? (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7"></path>
+                  </svg>
+                  Hide Details
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                  View Details
+                </>
+              )}
             </button>
             <button
               onClick={handleDownload}
@@ -101,7 +120,7 @@ export default function MonitorCard({
               </svg>
               {isDownloading ? 'Downloading...' : 'Download'}
             </button>
-            {isContributor && (
+            {canDelete && (
               <button
                 onClick={onDelete}
                 className="text-xs px-2.5 py-1 rounded-md transition-all duration-200 flex items-center gap-1 bg-red-500 text-white hover:bg-red-600 shadow-sm hover:shadow"

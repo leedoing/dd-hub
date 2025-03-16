@@ -483,12 +483,14 @@ export default function RecommendationMonitors() {
             User
           </button>
           <p className="text-sm text-gray-600 mt-4 italic">
-            If you&apos;re interested in becoming a contributor, please email{' '}
+            If you&apos;re interested in becoming a contributor, please leave a message on{' '}
             <a
-              href="mailto:lluckyy77@gmail.com"
+              href="https://www.linkedin.com/in/hyunjin-lee-35a146b1/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-purple-600 hover:text-purple-700"
             >
-              lluckyy77@gmail.com
+              LinkedIn
             </a>{' '}
             with your reason for joining.
           </p>

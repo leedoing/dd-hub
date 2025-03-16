@@ -128,10 +128,10 @@ export default function DashboardCard({
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border p-4 ${disabled ? 'opacity-75' : ''}`}>
+    <div className={`bg-white rounded-lg shadow-sm border p-3 sm:p-4 ${disabled ? 'opacity-75' : ''}`}>
       <div>
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2 sm:gap-0">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             {!isContributor && (
               <input
                 type="checkbox"
@@ -141,15 +141,15 @@ export default function DashboardCard({
                 className="h-3.5 w-3.5 text-purple-600 rounded border-gray-300 focus:ring-purple-500 disabled:opacity-50"
               />
             )}
-            <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 break-words">{title}</h3>
           </div>
-          <div className="flex items-center gap-1.5 ml-auto">
+          <div className="flex flex-wrap items-center gap-1.5 sm:ml-auto">
             {/* Detail 버튼 */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-xs px-2.5 py-1 rounded-md transition-all duration-200 text-purple-600 hover:text-purple-700 hover:bg-purple-50 font-medium flex items-center gap-1"
+              className="text-xs px-2 py-1 rounded-md transition-all duration-200 text-purple-600 hover:text-purple-700 hover:bg-purple-50 font-medium flex items-center gap-1"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               {isExpanded ? 'Hide' : 'Detail'}
@@ -159,13 +159,13 @@ export default function DashboardCard({
             <button
               onClick={() => sharedUrl && window.open(sharedUrl, '_blank')}
               disabled={!sharedUrl || sharedUrl.trim() === ''}
-              className={`text-xs px-2.5 py-1 rounded-md transition-all duration-200 flex items-center gap-1 ${
+              className={`text-xs px-2 py-1 rounded-md transition-all duration-200 flex items-center gap-1 ${
                 sharedUrl && sharedUrl.trim() !== ''
                   ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm hover:shadow'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
@@ -176,13 +176,13 @@ export default function DashboardCard({
             <button
               onClick={handleDownload}
               disabled={isDownloading}
-              className={`text-xs px-2.5 py-1 rounded-md transition-all duration-200 flex items-center gap-1 ${
+              className={`text-xs px-2 py-1 rounded-md transition-all duration-200 flex items-center gap-1 ${
                 isDownloading 
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-purple-500 text-white hover:bg-purple-600 shadow-sm hover:shadow'
               }`}
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
               {isDownloading ? 'Downloading...' : 'Download'}
@@ -193,7 +193,7 @@ export default function DashboardCard({
               <button
                 onClick={handleDelete}
                 disabled={!canDelete}
-                className={`text-xs px-2.5 py-1 rounded-md transition-all duration-200 flex items-center gap-1 shadow-sm hover:shadow ${
+                className={`text-xs px-2 py-1 rounded-md transition-all duration-200 flex items-center gap-1 shadow-sm hover:shadow ${
                   canDelete 
                     ? 'bg-red-500 text-white hover:bg-red-600' 
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
