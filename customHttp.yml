@@ -1,0 +1,15 @@
+customHeaders:
+  - pattern: "**/*"
+    headers:
+      - key: "x-datadog-trace-id"
+        value: "{x-datadog-trace-id}"
+      - key: "x-datadog-parent-id"
+        value: "{x-datadog-parent-id}"
+      - key: "x-datadog-sampling-priority"
+        value: "{x-datadog-sampling-priority}"
+      - key: "x-datadog-origin"
+        value: "{x-datadog-origin}"
+      - key: "traceparent"
+        value: "{traceparent}"
+      - key: "tracestate"
+        value: "{tracestate}"

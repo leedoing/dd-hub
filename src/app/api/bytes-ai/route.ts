@@ -4,6 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: Request) {
   try {
+    // Log all request headers for debugging
+    console.log('Request headers:');
+    const headerEntries = Array.from(request.headers.entries());
+    console.log(JSON.stringify(headerEntries, null, 2));
+
     const body = await request.json();
     const { query, session_id, user_id, is_new_session } = body;
 
