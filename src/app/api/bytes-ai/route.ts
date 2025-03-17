@@ -33,14 +33,35 @@ export async function POST(request: Request) {
       is_new_session: is_new_session
     });
 
+    // Prepare headers for Lambda call with Datadog trace headers
+    const lambdaHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Forward Datadog trace headers to maintain distributed tracing
+    const traceHeaderKeys = [
+      'x-datadog-trace-id', 
+      'x-datadog-parent-id', 
+      'x-datadog-sampling-priority', 
+      'x-datadog-origin',
+      'traceparent',
+      'tracestate'
+    ];
+    
+    traceHeaderKeys.forEach(key => {
+      const headerValue = request.headers.get(key);
+      if (headerValue) {
+        lambdaHeaders[key] = headerValue;
+        console.log(`Forwarding trace header: ${key}=${headerValue}`);
+      }
+    });
+
     // Call the Lambda function without streaming
     const lambdaResponse = await fetch(
       'https://tevypdyuwkuqnedfkcrfbwkvxa0gmueq.lambda-url.ap-northeast-2.on.aws/',
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: lambdaHeaders,
         body: JSON.stringify({ 
           query, 
           session_id: sessionId,
