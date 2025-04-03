@@ -324,103 +324,16 @@ export default function BytesAI() {
       <div className="flex items-center p-2 sm:p-3 border-b">
         <h2 className="text-base sm:text-lg font-bold text-purple-900">Bytes AI</h2>
       </div>
-      <div className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-2 sm:space-y-3">
-        {messages.length === 0 ? (
-          <div className="text-center py-8 sm:py-16">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-600 mb-2 sm:mb-3">Ask a question related to Datadog!</h3>
-            <p className="text-sm sm:text-base text-gray-500 mb-3 sm:mb-4 px-2">
-              Bytes AI provides answers to questions based on Datadog <a href="https://docs.datadoghq.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-medium hover:underline cursor-pointer">docs</a> and <a href="https://www.datadoghq.com/blog/" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-medium hover:underline cursor-pointer">blog</a>.
-            </p>
-            <div className="space-y-2 max-w-md mx-auto text-left px-2 sm:px-0">
-              <div className="p-2 sm:p-2.5 text-sm sm:text-base bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors" 
-                   onClick={() => setInput("What's the process for installing the Datadog Agent?")}>
-                "What's the process for installing the Datadog Agent?"
-              </div>
-              <div className="p-2 sm:p-2.5 text-sm sm:text-base bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors"
-                   onClick={() => setInput("How does Datadog collect logs?")}>
-                "How does Datadog collect logs?"
-              </div>
-              <div className="p-2 sm:p-2.5 text-sm sm:text-base bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors"
-                   onClick={() => setInput("What's the best way to configure APM in Datadog?")}>
-                "What's the best way to configure APM in Datadog?"
-              </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                {message.role === 'assistant' && (
-                  <img 
-                    src="/main.png" 
-                    alt="Datadog Logo" 
-                    className="w-6 h-6 sm:w-8 sm:h-8 rounded-full mr-1 sm:mr-2 flex-shrink-0 self-start mt-1 object-cover"
-                  />
-                )}
-                <div
-                  className={`max-w-[85%] sm:max-w-[80%] p-2 sm:p-2.5 rounded-lg ${
-                    message.role === 'user'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-800'
-                  } break-words whitespace-pre-wrap overflow-hidden text-sm sm:text-base`}
-                  style={{ 
-                    overflowWrap: 'break-word',
-                    maxWidth: '100%',
-                    width: message.role === 'assistant' ? '100%' : 'fit-content'
-                  }}
-                >
-                  <div className={`overflow-hidden ${message.role === 'assistant' ? 'w-full' : 'w-auto'}`}>
-                    {message.role === 'assistant' && message.content === '' && isLoading ? (
-                      <LoadingBar />
-                    ) : (
-                      message.role === 'assistant' 
-                        ? formatMessageContent(message.content)
-                        : message.content
-                    )}
-                  </div>
-                </div>
-                {message.role === 'user' && (
-                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-white rounded-full ml-1 sm:ml-2 flex-shrink-0 self-start mt-1 flex items-center justify-center">
-                    <img src="/bone.jpg" alt="Bone Icon" className="w-8 h-8 sm:w-12 sm:h-12 object-contain" />
-                  </div>
-                )}
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </>
-        )}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center p-8">
+          <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-3">
+            Under Development
+          </h3>
+          <p className="text-gray-600 text-base sm:text-lg">
+            This feature is currently being redeveloped. Coming back soon!
+          </p>
+        </div>
       </div>
-      
-      <form onSubmit={handleSubmit} className="flex gap-1 sm:gap-2 p-2 sm:p-3 border-t">
-        <input
-          type="text"
-          value={input}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-          placeholder="Asking Bytes AI a question..."
-          disabled={isLoading || isTyping}
-          className="flex-1 border rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-        <button 
-          type="submit" 
-          disabled={isLoading || isTyping || !input.trim()}
-          className="bg-purple-600 text-white px-3 sm:px-5 py-1.5 sm:py-2 rounded-md hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed text-sm sm:text-base"
-        >
-          {isLoading || isTyping ? (
-            <span className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-1 sm:mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span className="text-xs sm:text-sm">Processing...</span>
-            </span>
-          ) : 'Send'}
-        </button>
-      </form>
     </div>
   );
 } 
