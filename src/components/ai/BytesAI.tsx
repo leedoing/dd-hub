@@ -330,7 +330,7 @@ export default function BytesAI() {
             Under Development
           </h3>
           <p className="text-gray-600 text-base sm:text-lg">
-            This feature is currently being redeveloped. Coming back soon!
+          Due to cost issues, this LLM feature is temporarily unavailable. I will reopen it after optimizing LLM usage and cost.
           </p>
         </div>
       </div>
