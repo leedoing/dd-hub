@@ -2,10 +2,10 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
 
 const client = new DynamoDBClient({
-  region: process.env.NEXT_PUBLIC_AWS_REGION,
+  region: process.env.DD_HUB_AWS_REGION,
   credentials: {
-    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY || '',
+    accessKeyId: process.env.DD_HUB_AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.DD_HUB_AWS_SECRET_ACCESS_KEY || '',
   }
 });
 

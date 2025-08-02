@@ -5,16 +5,16 @@ import GoogleProvider from "next-auth/providers/google";
 
 // AWS 설정 로그는 유지 (문제 발생 시 디버깅에 유용)
 console.log('AWS Config:', {
-  region: process.env.NEXT_PUBLIC_AWS_REGION,
-  hasAccessKey: !!process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-  hasSecretKey: !!process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY
+  region: process.env.DD_HUB_AWS_REGION,
+  hasAccessKey: !!process.env.DD_HUB_AWS_ACCESS_KEY_ID,
+  hasSecretKey: !!process.env.DD_HUB_AWS_SECRET_ACCESS_KEY
 });
 
 const client = new DynamoDBClient({
-  region: process.env.NEXT_PUBLIC_AWS_REGION,
+  region: process.env.DD_HUB_AWS_REGION,
   credentials: {
-    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY || '',
+    accessKeyId: process.env.DD_HUB_AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.DD_HUB_AWS_SECRET_ACCESS_KEY || '',
   }
 });
 
