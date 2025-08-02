@@ -2,35 +2,10 @@
 
 export async function uploadDashboard(dashboardData: any, metadata: any) {
   try {
-<<<<<<< HEAD
-    await s3Client.send(new PutObjectCommand({
-      Bucket: 'hj-dd-hub',
-      Key: s3Key,
-      Body: JSON.stringify(dashboardData),
-      ContentType: 'application/json',
-    }));
-
-    // DynamoDB에 메타데이터 저장
-    await dynamoClient.send(new PutItemCommand({
-      TableName: 'hj-dd-hub',
-      Item: {
-        id: { S: id },
-        title: { S: metadata.title },
-        description: { S: metadata.description },
-        target: { S: metadata.target },
-        language: { S: metadata.language },
-        contributor: { S: metadata.contributor },
-        createdAt: { S: timestamp },
-        updatedAt: { S: timestamp },
-        s3Key: { S: s3Key },
-        downloads: { N: '0' },
-        sharedUrl: metadata.sharedUrl ? { S: metadata.sharedUrl } : { NULL: true },
-=======
     const response = await fetch('/api/aws/dashboards', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
->>>>>>> f9f54df (changed public access key > private)
       },
       body: JSON.stringify({ dashboardData, metadata }),
     });
