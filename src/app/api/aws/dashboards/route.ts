@@ -4,22 +4,35 @@ import { DynamoDBClient, PutItemCommand, ScanCommand, DeleteItemCommand } from '
 import { v4 as uuidv4 } from 'uuid';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 
-// AWS 클라이언트 설정 (서버 사이드)
-const s3Client = new S3Client({
-  region: process.env.DD_HUB_AWS_REGION || "ap-northeast-2",
-  credentials: {
-    accessKeyId: process.env.DD_HUB_AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.DD_HUB_AWS_SECRET_ACCESS_KEY!,
-  },
-});
+// AWS 클라이언트 설정 (서버 사이드) - 더 안전한 credentials 로딩
+function createAWSCredentials() {
+  const accessKeyId = process.env.DD_HUB_AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.DD_HUB_AWS_SECRET_ACCESS_KEY;
+  const region = process.env.DD_HUB_AWS_REGION || "ap-northeast-2";
 
-const dynamoClient = new DynamoDBClient({
-  region: process.env.DD_HUB_AWS_REGION || "ap-northeast-2",
-  credentials: {
-    accessKeyId: process.env.DD_HUB_AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.DD_HUB_AWS_SECRET_ACCESS_KEY!,
-  },
-});
+  console.log('AWS Credentials Check:', {
+    hasAccessKey: !!accessKeyId,
+    hasSecretKey: !!secretAccessKey,
+    region: region,
+    accessKeyPrefix: accessKeyId?.substring(0, 8) + '...'
+  });
+
+  if (!accessKeyId || !secretAccessKey) {
+    throw new Error('AWS credentials not found in environment variables');
+  }
+
+  return {
+    region,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  };
+}
+
+const awsConfig = createAWSCredentials();
+const s3Client = new S3Client(awsConfig);
+const dynamoClient = new DynamoDBClient(awsConfig);
 
 // GET: 대시보드 목록 조회
 export async function GET() {
