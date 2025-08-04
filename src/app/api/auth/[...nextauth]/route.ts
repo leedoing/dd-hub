@@ -79,11 +79,12 @@ const handler = NextAuth({
         return true;
       } catch (error) {
         console.error('SignIn error details:', {
-          message: error.message,
-          code: error.code,
-          statusCode: error.$metadata?.httpStatusCode,
-          requestId: error.$metadata?.requestId,
-          stack: error.stack
+          message: error instanceof Error ? error.message : String(error),
+          code: (error as any)?.code,
+          statusCode: (error as any)?.$metadata?.httpStatusCode,
+          requestId: (error as any)?.$metadata?.requestId,
+          stack: error instanceof Error ? error.stack : undefined,
+          fullError: error
         });
         return false;
       }
