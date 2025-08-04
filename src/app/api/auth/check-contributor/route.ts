@@ -1,12 +1,10 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 
 const client = new DynamoDBClient({
-  region: process.env.DD_HUB_AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.DD_HUB_AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.DD_HUB_AWS_SECRET_ACCESS_KEY || '',
-  }
+  region: process.env.DD_HUB_AWS_REGION || "ap-northeast-2",
+  credentials: fromNodeProviderChain(), // Amplify IAM Role 자동 인식
 });
 
 const docClient = DynamoDBDocumentClient.from(client);

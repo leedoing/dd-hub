@@ -1,48 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { DynamoDBClient, PutItemCommand, ScanCommand, DeleteItemCommand } from '@aws-sdk/client-dynamodb';
+import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 import { v4 as uuidv4 } from 'uuid';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 
-// AWS 클라이언트 설정 (서버 사이드) - 더 안전한 credentials 로딩
-function createAWSCredentials() {
-  const accessKeyId = process.env.DD_HUB_AWS_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.DD_HUB_AWS_SECRET_ACCESS_KEY;
-  const region = process.env.DD_HUB_AWS_REGION || "ap-northeast-2";
+// AWS 클라이언트 설정 (서버 사이드) - Amplify IAM Role 사용
+const region = process.env.DD_HUB_AWS_REGION || "ap-northeast-2";
 
-  console.log('AWS Credentials Check:', {
-    hasAccessKey: !!accessKeyId,
-    hasSecretKey: !!secretAccessKey,
-    region: region,
-    accessKeyPrefix: accessKeyId?.substring(0, 8) + '...'
-  });
+console.log('Monitor API AWS Config (IAM Role):', {
+  region: region,
+  usingIAMRole: true,
+  credentialProvider: 'fromNodeProviderChain'
+});
 
-  if (!accessKeyId || !secretAccessKey) {
-    throw new Error('AWS credentials not found in environment variables');
-  }
+const awsConfig = {
+  region: region,
+  credentials: fromNodeProviderChain(), // Amplify IAM Role 자동 인식
+};
 
-  return {
-    region,
-    credentials: {
-      accessKeyId,
-      secretAccessKey,
-    },
-  };
-}
-
-const awsConfig = createAWSCredentials();
 const s3Client = new S3Client(awsConfig);
 const dynamoClient = new DynamoDBClient(awsConfig);
 
 // GET: 모니터 목록 조회
 export async function GET() {
   try {
-    if (!process.env.DD_HUB_AWS_ACCESS_KEY_ID || !process.env.DD_HUB_AWS_SECRET_ACCESS_KEY) {
-      return NextResponse.json(
-        { error: 'AWS credentials not found' },
-        { status: 500 }
-      );
-    }
 
     const command = new ScanCommand({
       TableName: 'hj-dd-hub-monitors',
