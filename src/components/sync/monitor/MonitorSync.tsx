@@ -2,10 +2,11 @@
 'use client';
 
 import { useState } from 'react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface SyncResult {
   data?: {
-    monitors: Array<{
+    dashboards: Array<{
       title: string;
       status: 'success' | 'failed';
       errorMessage?: string;
@@ -37,9 +38,6 @@ const MonitorSyncForm = () => {
   });
   const [result, setResult] = useState<SyncResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [syncProgress, setSyncProgress] = useState(0);
-  const [totalMonitors, setTotalMonitors] = useState(0);
-  const [currentMonitor, setCurrentMonitor] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -56,51 +54,27 @@ const MonitorSyncForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setSyncProgress(0);
-    setResult(null);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
+
       const response = await fetch('/api/sync/monitors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
+        signal: controller.signal
       });
       
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.trim()) {
-              try {
-                const data = JSON.parse(line);
-                if (data.type === 'progress') {
-                  setSyncProgress(data.current);
-                  setTotalMonitors(data.total);
-                  setCurrentMonitor(data.currentMonitor || '');
-                } else if (data.type === 'result') {
-                  setResult(data);
-                }
-              } catch (e) {
-                // JSON 파싱 에러 무시
-              }
-            }
-          }
-        }
-      } else {
-        // Fallback for non-streaming response
-        const data = await response.json();
-        setResult(data);
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
+      const data = await response.json();
+      console.log('MonitorSyncForm - Response:', data);
+      setResult(data);
     } catch (error) {
       console.error('MonitorSyncForm - Error:', error);
       if (error instanceof Error) {
@@ -160,6 +134,7 @@ const MonitorSyncForm = () => {
 
   return (
     <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-8">
+      {loading && <LoadingSpinner />}
       <h2 className="text-2xl font-bold mb-8 text-purple-900">Monitor Synchronization</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-6">
@@ -194,87 +169,37 @@ const MonitorSyncForm = () => {
                    disabled:opacity-50 disabled:cursor-not-allowed
                    transition-colors"
         >
-          {loading ? (totalMonitors > 0 ? `Syncing (${syncProgress}/${totalMonitors})...` : 'Syncing...') : 'Sync'}
+          {loading ? 'Syncing...' : 'Sync'}
         </button>
       </form>
-
-      {/* 진행 상황 표시 */}
-      {loading && totalMonitors > 0 && (
-        <div className="mt-6">
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div
-              className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-              style={{ width: `${(syncProgress / totalMonitors) * 100}%` }}
-            ></div>
-          </div>
-          <p className="text-sm text-gray-600 mt-2 text-center">
-            {currentMonitor ? `Syncing: ${currentMonitor} (${syncProgress} of ${totalMonitors})` : `Syncing monitor ${syncProgress} of ${totalMonitors}`}
-          </p>
-        </div>
-      )}
 
       {result && (
         <div className="mt-8">
           <h3 className="text-lg font-semibold mb-4 text-purple-900">Sync Results:</h3>
           <div className="bg-gray-50 p-6 rounded-md overflow-auto border border-purple-100">
-            {result && result.data && result.data.monitors && result.data.monitors.length > 0 ? (
-              <>
-                <div className="overflow-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Monitor
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {result.data.monitors.map((monitor, index) => (
-                        <tr key={index}>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                            {monitor.title}
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm">
-                            {monitor.status === 'success' ? (
-                              <span className="text-green-600 flex items-center">
-                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                Success
-                              </span>
-                            ) : (
-                              <span className="text-red-600 flex items-center">
-                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                Failed: {monitor.errorMessage}
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                
-                <div className="mt-4 flex gap-4 text-sm">
-                  <div className="text-purple-900">
-                    <span className="font-semibold">Total:</span> {result.totalCount}
-                  </div>
-                  <div className="text-green-600">
-                    <span className="font-semibold">Success:</span> {result.successCount}
-                  </div>
-                  <div className="text-red-600">
-                    <span className="font-semibold">Failed:</span> {result.failureCount}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <p className="text-gray-600">No monitor data available</p>
-            )}
+            <pre className="text-gray-800 whitespace-pre-wrap font-mono text-sm">
+              {JSON.stringify({
+                dashboards: result.data?.dashboards.map(dashboard => ({
+                  title: dashboard.title,
+                  status: dashboard.status,
+                  errorMessage: dashboard.errorMessage || ""
+                })),
+                totalCount: result.totalCount,
+                successCount: result.successCount,
+                failureCount: result.failureCount
+              }, null, 2)}
+            </pre>
+            <div className="mt-4 flex gap-4 text-sm">
+              <div className="text-purple-900">
+                <span className="font-semibold">Total:</span> {result.totalCount}
+              </div>
+              <div className="text-green-600">
+                <span className="font-semibold">Success:</span> {result.successCount}
+              </div>
+              <div className="text-red-600">
+                <span className="font-semibold">Failed:</span> {result.failureCount}
+              </div>
+            </div>
           </div>
         </div>
       )}
