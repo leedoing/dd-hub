@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface SyncResult {
   data?: {
@@ -37,6 +36,9 @@ const DashboardSync = () => {
   });
   const [result, setResult] = useState<SyncResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [syncProgress, setSyncProgress] = useState(0);
+  const [totalDashboards, setTotalDashboards] = useState(0);
+  const [currentDashboard, setCurrentDashboard] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -53,6 +55,8 @@ const DashboardSync = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setSyncProgress(0);
+    setResult(null);
 
     try {
       const response = await fetch('/api/sync/dashboards', {
@@ -61,8 +65,41 @@ const DashboardSync = () => {
         body: JSON.stringify(formData),
       });
       
-      const data = await response.json();
-      setResult(data);
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.trim()) {
+              try {
+                const data = JSON.parse(line);
+                if (data.type === 'progress') {
+                  setSyncProgress(data.current);
+                  setTotalDashboards(data.total);
+                  setCurrentDashboard(data.currentDashboard || '');
+                } else if (data.type === 'result') {
+                  setResult(data);
+                }
+              } catch (e) {
+                // JSON 파싱 에러 무시
+              }
+            }
+          }
+        }
+      } else {
+        // Fallback for non-streaming response
+        const data = await response.json();
+        setResult(data);
+      }
     } catch (error) {
       console.error('Sync failed:', error);
     } finally {
@@ -119,7 +156,6 @@ const DashboardSync = () => {
 
   return (
     <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-8">
-      {loading && <LoadingSpinner />}
       <h2 className="text-2xl font-bold mb-8 text-purple-900">Dashboard Synchronization</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-6">
@@ -154,37 +190,87 @@ const DashboardSync = () => {
                    disabled:opacity-50 disabled:cursor-not-allowed
                    transition-colors"
         >
-          {loading ? 'Syncing...' : 'Sync'}
+          {loading ? (totalDashboards > 0 ? `Syncing (${syncProgress}/${totalDashboards})...` : 'Syncing...') : 'Sync'}
         </button>
       </form>
+
+      {/* 진행 상황 표시 */}
+      {loading && totalDashboards > 0 && (
+        <div className="mt-6">
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div
+              className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+              style={{ width: `${(syncProgress / totalDashboards) * 100}%` }}
+            ></div>
+          </div>
+          <p className="text-sm text-gray-600 mt-2 text-center">
+            {currentDashboard ? `Syncing: ${currentDashboard} (${syncProgress} of ${totalDashboards})` : `Syncing dashboard ${syncProgress} of ${totalDashboards}`}
+          </p>
+        </div>
+      )}
 
       {result && (
         <div className="mt-8">
           <h3 className="text-lg font-semibold mb-4 text-purple-900">Sync Results:</h3>
           <div className="bg-gray-50 p-6 rounded-md overflow-auto border border-purple-100">
-            <pre className="text-gray-800 whitespace-pre-wrap font-mono text-sm">
-              {JSON.stringify({
-                dashboards: result.data?.dashboards.map(dashboard => ({
-                  title: dashboard.title,
-                  status: dashboard.status,
-                  errorMessage: dashboard.errorMessage || ""
-                })),
-                totalCount: result.totalCount,
-                successCount: result.successCount,
-                failureCount: result.failureCount
-              }, null, 2)}
-            </pre>
-            <div className="mt-4 flex gap-4 text-sm">
-              <div className="text-purple-900">
-                <span className="font-semibold">Total:</span> {result.totalCount}
-              </div>
-              <div className="text-green-600">
-                <span className="font-semibold">Success:</span> {result.successCount}
-              </div>
-              <div className="text-red-600">
-                <span className="font-semibold">Failed:</span> {result.failureCount}
-              </div>
-            </div>
+            {result && result.data && result.data.dashboards && result.data.dashboards.length > 0 ? (
+              <>
+                <div className="overflow-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Dashboard
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {result.data.dashboards.map((dashboard, index) => (
+                        <tr key={index}>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                            {dashboard.title}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm">
+                            {dashboard.status === 'success' ? (
+                              <span className="text-green-600 flex items-center">
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Success
+                              </span>
+                            ) : (
+                              <span className="text-red-600 flex items-center">
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Failed: {dashboard.errorMessage}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="mt-4 flex gap-4 text-sm">
+                  <div className="text-purple-900">
+                    <span className="font-semibold">Total:</span> {result.totalCount}
+                  </div>
+                  <div className="text-green-600">
+                    <span className="font-semibold">Success:</span> {result.successCount}
+                  </div>
+                  <div className="text-red-600">
+                    <span className="font-semibold">Failed:</span> {result.failureCount}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-gray-600">No dashboard data available</p>
+            )}
           </div>
         </div>
       )}
