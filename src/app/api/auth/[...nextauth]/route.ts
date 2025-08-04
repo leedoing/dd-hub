@@ -1,5 +1,6 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -10,34 +11,19 @@ console.log('AWS Config:', {
   hasSecretKey: !!process.env.DD_HUB_AWS_SECRET_ACCESS_KEY
 });
 
-// AWS 클라이언트 설정 (NextAuth용) - 더 안전한 credentials 로딩
-function createNextAuthAWSCredentials() {
-  const accessKeyId = process.env.DD_HUB_AWS_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.DD_HUB_AWS_SECRET_ACCESS_KEY;
-  const region = process.env.DD_HUB_AWS_REGION || "ap-northeast-2";
+// AWS 클라이언트 설정 (NextAuth용) - Amplify IAM Role 사용
+const region = process.env.DD_HUB_AWS_REGION || "ap-northeast-2";
 
-  console.log('NextAuth AWS Credentials Check:', {
-    hasAccessKey: !!accessKeyId,
-    hasSecretKey: !!secretAccessKey,
-    region: region,
-    accessKeyPrefix: accessKeyId?.substring(0, 8) + '...'
-  });
+console.log('NextAuth AWS Config (IAM Role):', {
+  region: region,
+  usingIAMRole: true,
+  credentialProvider: 'fromNodeProviderChain'
+});
 
-  if (!accessKeyId || !secretAccessKey) {
-    throw new Error('NextAuth: AWS credentials not found in environment variables');
-  }
-
-  return {
-    region,
-    credentials: {
-      accessKeyId,
-      secretAccessKey,
-    },
-  };
-}
-
-const nextAuthAwsConfig = createNextAuthAWSCredentials();
-const client = new DynamoDBClient(nextAuthAwsConfig);
+const client = new DynamoDBClient({
+  region: region,
+  credentials: fromNodeProviderChain(), // Amplify IAM Role 자동 인식
+});
 
 const docClient = DynamoDBDocumentClient.from(client, {
   marshallOptions: {
