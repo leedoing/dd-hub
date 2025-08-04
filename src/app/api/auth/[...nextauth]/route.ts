@@ -43,7 +43,10 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user }) {
       try {
+        console.log('SignIn attempt for user:', { email: user.email, name: user.name });
+        
         // 사용자가 이미 존재하는지 확인
+        console.log('Checking user in DynamoDB...');
         const getResult = await docClient.send(
           new GetCommand({
             TableName: 'hj-dd-hub-login',
@@ -53,8 +56,11 @@ const handler = NextAuth({
           })
         );
 
+        console.log('DynamoDB GetCommand result:', { hasItem: !!getResult.Item });
+
         // 사용자가 존재하지 않으면 새로 생성
         if (!getResult.Item) {
+          console.log('Creating new user in DynamoDB...');
           await docClient.send(
             new PutCommand({
               TableName: 'hj-dd-hub-login',
@@ -65,11 +71,20 @@ const handler = NextAuth({
               },
             })
           );
+          console.log('New user created successfully');
+        } else {
+          console.log('Existing user found');
         }
 
         return true;
       } catch (error) {
-        console.error('SignIn error:', error);
+        console.error('SignIn error details:', {
+          message: error.message,
+          code: error.code,
+          statusCode: error.$metadata?.httpStatusCode,
+          requestId: error.$metadata?.requestId,
+          stack: error.stack
+        });
         return false;
       }
     },
